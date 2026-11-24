@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIRSTRING</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="stage" class="stage">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <div id="placeholder" class="placeholder">
+    Press “Start Camera” to begin
+  </div>
+
+  <div class="hud">
+    <div class="chip status">
+      <span id="status-dot" class="dot"></span>
+      <span id="status-text">Camera off</span>
+    </div>
+    <span id="hands-info" class="chip">Hands: 0</span>
+    <span id="fps-info" class="chip">FPS: --</span>
+    <span id="pinch-info" class="chip">L: – · R: –</span>
+    <span id="string-info" class="chip">String: –</span>
+    <span id="pluck-info" class="chip">Plucks: 0</span>
+    <span id="mode-info" class="chip">Mode: EDIT · point to pluck</span>
+  </div>
+
+  <!-- Current note, top center -->
+    <!-- One note label per string -->
+  <div id="labels" class="labels"></div>
+
+  <div class="controls">
+    <button id="camera-btn" class="btn">Start Camera</button>
+    <button id="clear-btn" class="btn secondary">Clear string</button>
+  </div>
+
+  <!-- Sound controls, bottom right -->
+  <div class="audio-panel">
+    <button id="sound-btn" class="btn secondary small">Sound: On</button>
+    <input id="volume" type="range" min="0" max="100" value="70" aria-label="Volume" />
+  </div>
+
+  <p id="message" class="message" hidden></p>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

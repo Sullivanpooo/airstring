@@ -1,0 +1,262 @@
+:root {
+  --bg: #000;
+  --panel: rgba(12, 14, 20, 0.8);
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #e8ecf4;
+  --muted: #9aa3b5;
+  --accent: #5ee1ff;
+  --ok: #4ade80;
+  --warn: #facc15;
+  --error: #f87171;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden; /* no scrollbars: the camera is the whole page */
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- Full-screen camera ---------- */
+/* JS sets --ar (the camera's width / height). The stage is sized to COVER the
+   window (like background-size: cover), so there are no black bars.
+   Video and canvas share the exact same box, so drawings stay aligned. */
+.stage {
+  --ar: 1.7778; /* 16:9 until the real camera size is known */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, calc(100vh * var(--ar)));
+  height: max(100vh, calc(100vw / var(--ar)));
+  transform: translate(-50%, -50%);
+}
+
+/* Mirror video and canvas so it behaves like a mirror */
+.stage video,
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.placeholder {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* ---------- Floating HUD ---------- */
+.hud {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.dot.loading { background: var(--warn); }
+.dot.active  { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.dot.error   { background: var(--error); }
+
+/* ---------- Controls ---------- */
+.controls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.btn {
+  padding: 12px 28px;
+  border: 1px solid var(--accent);
+  background: var(--panel);
+  color: var(--accent);
+  border-radius: 999px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #04141a;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Error message ---------- */
+.message {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(600px, 90vw);
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(40, 10, 10, 0.85);
+  border: 1px solid var(--error);
+  border-radius: 10px;
+  color: var(--error);
+  text-align: center;
+  z-index: 20;
+}
+.message[hidden] {
+  display: none;
+}
+
+/* Chip turns green when both hands are pinching */
+.chip.active {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+/* Chip flashes briefly on every pluck */
+.chip.flash {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn.secondary {
+  border-color: var(--border);
+  color: var(--text);
+}
+.btn.secondary:hover:not(:disabled) {
+  background: var(--text);
+  color: #04141a;
+}
+
+.chip.active {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.chip.flash {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- Note display ---------- */
+.note-display {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+.note-display[hidden] {
+  display: none;
+}
+.note-name {
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: color 0.15s, transform 0.15s;
+}
+.note-freq {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* The note lights up on every pluck */
+.note-display.flash .note-name {
+  color: var(--accent);
+  transform: scale(1.18);
+}
+
+/* ---------- Sound controls ---------- */
+.audio-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+.btn.small {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+.audio-panel input[type="range"] {
+  width: 110px;
+  accent-color: var(--accent);
+}
+
+/* ---------- Per-string note labels ---------- */
+.labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.string-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 2px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+  transition: color 0.15s, border-color 0.15s;
+  will-change: transform;
+}
+.string-label.flash {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.placeholder[hidden] {
+  display: none;
+}
+
+/* Pluck mode indicator */
+.chip.pluck-on {
+  border-color: #ff8a4a;
+  color: #ff8a4a;
+}
